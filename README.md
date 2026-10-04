@@ -3,7 +3,7 @@
 Windows PC＋Steam Frame向けに、導入ツールと日本語手順を追加したQuestLHSyncのForkです。
 LighthouseトラッカーやIndexコントローラーの座標を、Steam Frameのトラッキング座標へ合わせます。
 
-**[配布ZIPをダウンロード](https://github.com/parukoro/QuestLHSync-SteamFrame/releases/latest)** ·
+**[配布ZIPをダウンロード](https://github.com/parukoro/QuestLHSync-SteamFrame/releases/tag/v1.7-frame.1)** ·
 **[日本語の導入手順](README-SteamFrame-ja.md)** · [検証状況](VALIDATION-ja.md)
 
 ## 必要な構成
@@ -40,7 +40,7 @@ SSHでのコピー方法、IP指定、接続確認、削除手順は[日本語�
 - 現在の位置合わせを再認識の候補に追加。
 - 鏡像判定でも通常の観測数を要求し、少ない観測での大きな切り替えを抑制。
 
-この安定性対策は実機評価前の試験版です。初回認識時間の短縮や頭部トラッカーと同等の精度は未確認です。
+この安定性対策は短時間の実機試験で、ユーザーからずれと復帰の改善報告を受けています。長時間評価前の試験版（Pre-release）です。初回認識時間の短縮や頭部トラッカーと同等の精度は未確認です。
 ユーザーからWindows PC＋Steam Frameでの問題解決報告を受けていますが、精度・遅延・長時間動作は開発側では未測定です。
 デーモンへの接続には認証がありません。信頼できるLANで使用してください。
 
