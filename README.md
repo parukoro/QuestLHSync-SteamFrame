@@ -14,12 +14,12 @@ LighthouseトラッカーやIndexコントローラーの座標を、Steam Frame
 
 ## 導入
 
-1. Releasesから `QuestLHSync-SteamFrame-1.6.zip` をダウンロードし、固定のフォルダーへ展開。
+1. Releasesから `QuestLHSync-SteamFrame-1.7.zip` をダウンロードし、固定のフォルダーへ展開。
 2. PCのSteamVRを終了し、`install-pc.cmd` を実行。既存設定はバックアップされます。
-3. 同梱の `QuestLHSync-frame-v1.6.tar.gz` をFrameへコピーし、Frameのターミナルで実行。
+3. 同梱の `QuestLHSync-frame-v1.7.tar.gz` をFrameへコピーし、Frameのターミナルで実行。
 
 ```sh
-tar xzf QuestLHSync-frame-v1.6.tar.gz
+tar xzf QuestLHSync-frame-v1.7.tar.gz
 ./QuestLHSync-frame/install.sh
 ```
 
@@ -35,7 +35,12 @@ SSHでのコピー方法、IP指定、接続確認、削除手順は[日本語�
 - Frame側の診断、校正ファイルの事前確認、SteamVR再起動の延期。
 - Quest用Magiskモジュール・Android NDK・Fridaを要求しないSteam Frame向け配布ビルド。
 
-カメラ取得と座標推定のアルゴリズムは上流版を維持しています。
+上流1.7の動作中の水平補正・動きによる鏡像判定を取り込み、遮蔽時の安定性対策を追加しています。
+- 最近5秒に2台のステーションを複数の位置から観測でき、推定が十分に決まる場合だけ通常の座標補正を更新。片方が隠れた場合は直前の補正を保持します。
+- 現在の位置合わせを再認識の候補に追加。
+- 鏡像判定でも通常の観測数を要求し、少ない観測での大きな切り替えを抑制。
+
+この安定性対策は実機評価前の試験版です。初回認識時間の短縮や頭部トラッカーと同等の精度は未確認です。
 ユーザーからWindows PC＋Steam Frameでの問題解決報告を受けていますが、精度・遅延・長時間動作は開発側では未測定です。
 デーモンへの接続には認証がありません。信頼できるLANで使用してください。
 
@@ -47,14 +52,14 @@ Visual Studio 2022のC++ビルド環境、Python 3、Zig（検証版0.14.1）を
 build_frame.bat
 ```
 
-配布ZIPは `out/` に生成されます。テストは `python -m unittest discover -s tests -v` で実行できます。
+配布ZIPは `out/` に生成されます。ソルバーの回帰テストは `tests\run_solver_tests.bat` で実行します。テストは `python -m unittest discover -s tests -v` で実行できます。
 
 ## Credits and license
 
-Based on [CreoleVR/QuestLHSync](https://github.com/CreoleVR/QuestLHSync), upstream version 1.6,
-commit `a99da7b23cc75abfa892742e356b19386c01ce4e`.
+Based on [CreoleVR/QuestLHSync](https://github.com/CreoleVR/QuestLHSync), upstream version 1.7,
+commit `9e44796f875d21ab75c3239b47f7633a032747ae`.
 Steam Frame support was contributed upstream by [@NotZoeyDev](https://github.com/NotZoeyDev).
-This fork adds distribution and installation tools; it is not an official Valve or upstream release.
+This fork adds distribution tools and experimental occlusion stability changes; it is not an official Valve or upstream release.
 
 MIT license: [LICENSE](LICENSE). Third-party components: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 The original README is preserved in [README-upstream.md](README-upstream.md).
