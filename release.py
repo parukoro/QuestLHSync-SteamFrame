@@ -7,13 +7,13 @@
 
 Refuses when a build is older than its sources, so a release never ships stale binaries.
 """
+import argparse
 import os
 import sys
 import zipfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, "magisk"))
-from build_module import VERSION  # noqa: E402
+from version import VERSION
 
 DRIVER = os.path.join(HERE, "driver", "questlhsync")
 BIN = os.path.join(DRIVER, "bin", "win64")
@@ -30,25 +30,39 @@ def newest(*dirs):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--frame-only", action="store_true", help="package PC + Steam Frame without a Quest/Magisk build")
+    args = parser.parse_args()
     checks = [
         (os.path.join(BIN, "driver_questlhsync.dll"), newest("src/driver", "src/common", "third_party"), "build.bat"),
         (os.path.join(BIN, "QuestLHSync.exe"), newest("src/overlay", "src/common", "third_party"), "build.bat"),
-        (MODULE, newest("magisk/src", "magisk/module", "src/headset"), "python magisk\\build_module.py"),
-        (FRAME, newest("frame/src", "frame/driver", "frame/package", "src/headset"),
+        (FRAME, max(newest("frame/src", "frame/driver", "frame/package", "src/headset"),
+                    os.path.getmtime(os.path.join(HERE, "frame", "build.py")),
+                    os.path.getmtime(os.path.join(HERE, "version.py"))),
          "python frame\\build.py"),
     ]
+    if not args.frame_only:
+        checks.append((MODULE, newest("magisk/src", "magisk/module", "src/headset"), "python magisk\\build_module.py"))
     for path, src, how in checks:
         if not os.path.exists(path) or os.path.getmtime(path) < src:
             sys.exit(f"{os.path.relpath(path, HERE)} is missing or older than its sources: run {how}")
-    out = os.path.join(HERE, "out", f"QuestLHSync-{VERSION.lstrip('v')}.zip")
+    label = "QuestLHSync-SteamFrame" if args.frame_only else "QuestLHSync"
+    out = os.path.join(HERE, "out", f"{label}-{VERSION.lstrip('v')}.zip")
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         for rel in ("driver.vrdrivermanifest", "resources/settings/default.vrsettings",
                     "bin/win64/driver_questlhsync.dll", "bin/win64/QuestLHSync.exe", "bin/win64/openvr_api.dll"):
             z.write(os.path.join(DRIVER, rel), "questlhsync/" + rel)
-        z.write(MODULE, os.path.basename(MODULE))
+        if not args.frame_only:
+            z.write(MODULE, os.path.basename(MODULE))
         z.write(FRAME, os.path.basename(FRAME))
         for f in ("README.md", "LICENSE", "THIRD_PARTY_NOTICES.md"):
             z.write(os.path.join(HERE, f), f)
+        if args.frame_only:
+            z.write(os.path.join(HERE, "README-upstream.md"), "README-upstream.md")
+            z.write(os.path.join(HERE, "README-SteamFrame-ja.md"), "README-SteamFrame-ja.md")
+            z.write(os.path.join(HERE, "VALIDATION-ja.md"), "VALIDATION-ja.md")
+            for f in ("setup.ps1", "install-pc.cmd", "status-pc.cmd", "uninstall-pc.cmd"):
+                z.write(os.path.join(HERE, "pc", f), f)
     print(f"built {out} ({os.path.getsize(out) / 1e6:.1f} MB)")
 
 

@@ -17,8 +17,8 @@ import sys
 import tarfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(ROOT, "magisk"))
-from build_module import VERSION  # noqa: E402
+sys.path.insert(0, ROOT)
+from version import VERSION  # noqa: E402
 
 HERE = os.path.join(ROOT, "frame")
 BUILD = os.path.join(HERE, "build")
@@ -61,7 +61,7 @@ def main():
         add("lhsyncd", daemon, 0o755)
         add("questlhsync_frame/driver.vrdrivermanifest", os.path.join(HERE, "driver", "driver.vrdrivermanifest"), 0o644)
         add("questlhsync_frame/bin/linuxarm64/driver_questlhsync_frame.so", driver, 0o755)
-        for f, mode in (("install.sh", 0o755), ("uninstall.sh", 0o755), ("questlhsync.service", 0o644)):
+        for f, mode in (("install.sh", 0o755), ("uninstall.sh", 0o755), ("doctor.sh", 0o755), ("questlhsync.service", 0o644)):
             add(f, os.path.join(HERE, "package", f), mode)
     print(f"built {PACKAGE} ({os.path.getsize(PACKAGE) / 1e3:.0f} KB)")
     return PACKAGE

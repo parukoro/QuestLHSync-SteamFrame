@@ -1,160 +1,60 @@
-# QuestLHSync
+# QuestLHSync — Steam Frame Edition
 
-Lighthouse trackers, controllers and base stations aligned to a Quest's or a
-Steam Frame's own tracking, with nothing mounted on the headset. The headset's
-tracking cameras see the laser flashes of SteamVR 2.0 base stations, and
-QuestLHSync uses them to keep the lighthouse space lined up with the
-headset's while you play. No SpaceCalibrator, no tracker strapped to your head.
+Windows PC＋Steam Frame向けに、導入ツールと日本語手順を追加したQuestLHSyncのForkです。
+LighthouseトラッカーやIndexコントローラーの座標を、Steam Frameのトラッキング座標へ合わせます。
 
-It has two parts: a **headset part**, which serves what the cameras see on your
-local network (a Magisk module on a Quest, a user service and a small SteamVR
-driver on a Steam Frame), and a **SteamVR driver** for the PC, which solves the
-alignment, applies it to every lighthouse device and adds a page to the SteamVR
-dashboard.
+**[配布ZIPをダウンロード](https://github.com/parukoro/QuestLHSync-SteamFrame/releases/latest)** ·
+**[日本語の導入手順](README-SteamFrame-ja.md)** · [検証状況](VALIDATION-ja.md)
 
-Steam Frame support is by [@NotZoeyDev](https://github.com/NotZoeyDev).
+## 必要な構成
 
-![The QuestLHSync dashboard page](docs/dashboard.png)
+- Windows PCとSteamVR、Steam Frame。同じLANに接続。
+- SteamVR 2.0ベースステーションと、対応レシーバーでPCに接続したLighthouseトラッカーまたはIndexコントローラー。
+- PCからFrameへのVR配信。Steam Frame単体での利用は対象外です。
 
-## Requirements
+## 導入
 
-- A **Quest Pro, Quest 3 or Quest 3S**, rooted with
-  [Magisk](https://github.com/topjohnwu/Magisk). Tested on the Quest Pro. The
-  Quest 3 has the same tracking cameras but hasn't been tried yet, nor has
-  the 3S.
-- Or a **Steam Frame**. No root, no developer password: everything installs as
-  your user.
-- **SteamVR 2.0 base stations** (1.0 isn't supported).
-- **Windows with SteamVR**, with the headset streamed by anything: Steam Link,
-  Link, Air Link, Virtual Desktop, ALVR, CreoleCast...
-- The PC and the headset on the **same local network**.
-- At least **one lighthouse device switched on** (a tracker or an Index
-  controller). SteamVR only shows base stations while one is on.
+1. Releasesから `QuestLHSync-SteamFrame-1.6.zip` をダウンロードし、固定のフォルダーへ展開。
+2. PCのSteamVRを終了し、`install-pc.cmd` を実行。既存設定はバックアップされます。
+3. 同梱の `QuestLHSync-frame-v1.6.tar.gz` をFrameへコピーし、Frameのターミナルで実行。
 
-## Install
-
-1. Download `QuestLHSync-<version>.zip` from
-   [Releases](https://github.com/CreoleVR/QuestLHSync/releases) and extract it.
-2. **Headset, Quest:** install `QuestLHSync-magisk-<version>.zip` in the Magisk
-   app (**Modules > Install from storage**) and reboot.
-
-   **Headset, Steam Frame:** copy `QuestLHSync-frame-<version>.tar.gz` to the
-   Frame (over ssh, or a download in Desktop Mode), then in a terminal on it:
-
-   ```
-   tar xzf QuestLHSync-frame-<version>.tar.gz
-   QuestLHSync-frame/install.sh
-   ```
-
-   It installs into `~/.local/share/questlhsync`, starts `lhsyncd` as a systemd
-   user service and restarts SteamVR on the headset once, to load the
-   `questlhsync_frame` driver.
-3. **PC:** with SteamVR closed, move the `questlhsync` folder somewhere
-   permanent and register it:
-
-   ```
-   "C:\Program Files (x86)\Steam\steamapps\common\SteamVR\bin\win64\vrpathreg.exe" adddriver "C:\path\to\questlhsync"
-   ```
-
-4. Turn off SpaceCalibrator, OpenVR-SpaceSync or anything else that moves
-   lighthouse devices. Two tools correcting the same devices fight each other.
-
-## Use
-
-Start SteamVR as usual. QuestLHSync finds the headset by itself. Its page is in
-the SteamVR dashboard, with a copy on the desktop.
-
-The first time, look around so the cameras catch both base stations (the
-Frame's upper cameras see most of them). It locks within about half a minute,
-and after that starts from the saved alignment.
-
-With three base stations, glance at the third one too. QuestLHSync's reference
-frame keeps whatever tilt SteamVR's lighthouse space had when it was first
-seen, and with two base stations in view a tilt of 1.5° puts trackers on the
-floor 15 cm to the side. Once the cameras have seen three base stations well
-enough to tell, QuestLHSync levels the reference frame with the headset's
-gravity and keeps the level in `stations.json`.
-
-- **Re-acquire** finds the alignment again from scratch. Use it if lighthouse
-  devices look out of place. Wear a tracker or hold a controller while it
-  acquires: when two base stations could be either way round, the devices near
-  your head decide.
-- **Pause corrections** holds lighthouse devices where they are.
-- **Record session** saves what the driver receives to a file, for bug reports.
-
-## Settings
-
-Optional, in `steamvr.vrsettings` under `"driver_questlhsync"`:
-
-| Key | Default | |
-|---|---|---|
-| `enable` | `true` | `false` turns QuestLHSync off |
-| `host` | `""` | The headset's IP address(es), comma-separated, for networks that drop broadcasts |
-| `headset` | `""` | A headset serial to prefer when several answer |
-| `anyHmd` | `false` | Use SteamVR's headset even when it isn't named a Quest Pro, 3, 3S or Steam Frame |
-| `record` | `false` | Record every session (same as the button) |
-
-## Troubleshooting
-
-- **"Looking for the headset":** the headset must be awake and on the same
-  network. If your router drops broadcasts, set `host`.
-- **"No camera frames":** the cameras only run while the headset tracks. Put it
-  on. If it stays there, check `%LOCALAPPDATA%\QuestLHSync\questlhsync.log`:
-  a `no camera buffers found` line means the headset part doesn't know this
-  headset or OS build yet. Please open an issue with that line. On the Frame, a
-  "questlhsync_frame SteamVR driver isn't running" line means SteamVR on the
-  headset hasn't restarted since the install:
-  `systemctl --user restart steamvr.service`.
-- **"Waiting for base stations":** switch on a tracker or controller.
-- **"Finding the base stations" for a long time:** face each base station for a
-  few seconds.
-
-## Privacy and security
-
-The PC side writes only to `%LOCALAPPDATA%\QuestLHSync` and only talks to the
-headset. The headset part answers anyone on the local network without
-authentication. It sends bright-spot positions (never images), the camera
-calibration, and the headset's serial number, model and firmware. Use it on a
-network you trust. It only reads the cameras while a PC is connected, and
-patches nothing on disk. On the Frame, `lhsyncd` logs to the user journal
-(`journalctl --user -u questlhsync`).
-
-## Uninstall
-
-- **Quest:** remove the module in the Magisk app and reboot.
-- **Steam Frame:** run `QuestLHSync-frame/uninstall.sh` on the headset.
-- **PC:** with SteamVR closed, run
-  `vrpathreg removedriver "C:\path\to\questlhsync"`, then delete
-  `%LOCALAPPDATA%\QuestLHSync`.
-
-## Building
-
-Visual Studio 2022 with C++, the Android NDK, [Zig](https://ziglang.org) and
-Python 3:
-
-```
-build.bat                        SteamVR driver + dashboard app (SteamVR closed)
-python magisk\build_module.py    Magisk module, into out\
-python frame\build.py            Steam Frame package, into out\
-python release.py                out\QuestLHSync-<version>.zip
-python install.py                register driver\questlhsync with SteamVR
-python install.py headset        install the module over adb, no reboot
+```sh
+tar xzf QuestLHSync-frame-v1.6.tar.gz
+./QuestLHSync-frame/install.sh
 ```
 
-Zig cross-compiles the Steam Frame package (`zig` on PATH, or `ZIG` set to it).
-On the Frame itself or any arm64 Linux, `frame/build.py` uses `cc` and `c++`
-instead.
+4. 他の座標補正ツールを停止し、VR配信とトラッカーを起動。ヘッドセットを装着し、ベースステーションを見渡しながらゆっくり頭と体を動かします。
 
-`lhsyncd`'s core (`src/headset/lhsyncd.c`) is shared by both headsets; each adds
-its own side behind `src/headset/headset.h` (`magisk/src/quest.c`,
-`frame/src/frame.c`).
+Frame側インストールはユーザー領域で動作し、rootやMagiskは不要です。実行時にFrame側SteamVRが再起動します。
+SSHでのコピー方法、IP指定、接続確認、削除手順は[日本語手順](README-SteamFrame-ja.md)を参照してください。
 
-## License
+## このForkの変更
 
-MIT, see [LICENSE](LICENSE). Third-party code is listed in
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+- Python不要のWindows導入・接続確認・登録解除ツール。
+- IP・ヘッドセットシリアル指定と、SteamVR設定のバックアップ。
+- Frame側の診断、校正ファイルの事前確認、SteamVR再起動の延期。
+- Quest用Magiskモジュール・Android NDK・Fridaを要求しないSteam Frame向け配布ビルド。
 
-QuestLHSync is not affiliated with Meta or Valve. Meta Quest is a trademark of
-Meta Platforms, Inc.; Steam Frame and SteamVR are trademarks of Valve
-Corporation. Rooting a headset and running code inside its system services is
-at your own risk.
+カメラ取得と座標推定のアルゴリズムは上流版を維持しています。
+ユーザーからWindows PC＋Steam Frameでの問題解決報告を受けていますが、精度・遅延・長時間動作は開発側では未測定です。
+デーモンへの接続には認証がありません。信頼できるLANで使用してください。
+
+## ビルド
+
+Visual Studio 2022のC++ビルド環境、Python 3、Zig（検証版0.14.1）を用意し、次を実行します。
+
+```bat
+build_frame.bat
+```
+
+配布ZIPは `out/` に生成されます。テストは `python -m unittest discover -s tests -v` で実行できます。
+
+## Credits and license
+
+Based on [CreoleVR/QuestLHSync](https://github.com/CreoleVR/QuestLHSync), upstream version 1.6,
+commit `a99da7b23cc75abfa892742e356b19386c01ce4e`.
+Steam Frame support was contributed upstream by [@NotZoeyDev](https://github.com/NotZoeyDev).
+This fork adds distribution and installation tools; it is not an official Valve or upstream release.
+
+MIT license: [LICENSE](LICENSE). Third-party components: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+The original README is preserved in [README-upstream.md](README-upstream.md).
