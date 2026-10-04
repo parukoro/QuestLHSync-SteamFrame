@@ -15,7 +15,7 @@ LighthouseトラッカーやIndexコントローラーの座標を、Steam Frame
 ## 導入
 
 1. Releasesから `QuestLHSync-SteamFrame-1.7.zip` をダウンロードし、固定のフォルダーへ展開。
-2. PCのSteamVRを終了し、`install-pc.cmd` を実行。既存設定はバックアップされます。
+2. PCのSteamVRを終了し、`install-pc.cmd` を実行。既存設定はバックアップされます。別フォルダーの旧版から更新する場合は、導入成功後に旧版の `uninstall-pc.cmd` で旧版登録を解除してください。
 3. 同梱の `QuestLHSync-frame-v1.7.tar.gz` をFrameへコピーし、Frameのターミナルで実行。
 
 ```sh
